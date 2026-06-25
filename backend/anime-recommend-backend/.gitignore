@@ -1,0 +1,20 @@
+# Build outputs
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Maven
+.m2/
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env

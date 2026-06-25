@@ -1,0 +1,57 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: anime-recommend-backend
+  
+  # ========== MVC配置（修复Springfox兼容性） ==========
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # ========== 数据源配置 ==========
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:anime_recommend}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:your_database_password}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 3
+
+  # ========== JPA配置 ==========
+  jpa:
+    hibernate:
+      ddl-auto: update  # 自动创建/更新表
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # ========== Redis配置 ==========
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 3000ms
+
+# ========== 微信小程序配置 ==========
+wechat:
+  app-id: ${WECHAT_APP_ID:wxc055e1e5ce356fc1}
+  app-secret: ${WECHAT_APP_SECRET:your_wechat_app_secret}
+  # 订阅消息模板ID
+  template:
+    schedule-reminder: ""
+    recommend-reminder: ""
+    review-reply: ""
+
+# ========== 日志配置 ==========
+logging:
+  level:
+    root: INFO
+    com.anime: DEBUG
+    org.hibernate.SQL: DEBUG
