@@ -1,0 +1,79 @@
+<view class="container">
+  <view wx:if="{{showLogin}}" class="login-form">
+    <text class="page-title">管理员登录</text>
+    <form bindsubmit="handleLogin">
+      <view class="input-group">
+        <text class="label">用户名</text>
+        <input name="username" placeholder="请输入管理员用户名" class="input" />
+      </view>
+      <view class="input-group">
+        <text class="label">密码</text>
+        <input name="password" password="true" placeholder="请输入密码" class="input" />
+      </view>
+      <button class="login-btn" form-type="submit">登录</button>
+    </form>
+  </view>
+
+  <view wx:else>
+    <!-- 标题 -->
+    <view class="page-title">
+      <text>后台管理 · 数据看板</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{error}}" class="error">
+      <text>数据加载失败，请下拉刷新</text>
+    </view>
+
+    <view wx:else>
+      <!-- 卡片统计 -->
+      <view class="stats-cards">
+        <view class="card">
+          <text class="card-label">总用户数</text>
+          <text class="card-value">{{dashboardData.cards.totalUsers}}</text>
+        </view>
+        <view class="card">
+          <text class="card-label">新用户（今日）</text>
+          <text class="card-value">{{dashboardData.cards.newUsersToday}}</text>
+        </view>
+        <view class="card">
+          <text class="card-label">总动漫数</text>
+          <text class="card-value">{{dashboardData.cards.totalAnimes}}</text>
+        </view>
+        <view class="card">
+          <text class="card-label">总评论数</text>
+          <text class="card-value">{{dashboardData.cards.totalReviews}}</text>
+        </view>
+      </view>
+
+      <!-- 社区分析（第六步已实现） -->
+      <view class="section-title">社区互动分析</view>
+      <view class="stats-cards">
+        <view class="card">
+          <text class="card-label">近7天新增评论</text>
+          <text class="card-value">{{dashboardData.communityAnalysis.recentReviews}}</text>
+        </view>
+        <view class="card">
+          <text class="card-label">用户参与度</text>
+          <text class="card-value">{{dashboardData.communityAnalysis.participationRate}}</text>
+        </view>
+        <view class="card">
+          <text class="card-label">推荐点击率</text>
+          <text class="card-value">{{dashboardData.communityAnalysis.recommendationClickRate}}</text>
+        </view>
+      </view>
+
+      <!-- 热门话题 -->
+      <view class="section-title">热门话题标签</view>
+      <view class="tag-cloud">
+        <view wx:for="{{dashboardData.communityAnalysis.hotTags}}" wx:key="index" class="tag-item">
+          <text>{{item.tag}}</text>
+          <text class="tag-count">{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
