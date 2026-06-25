@@ -1,0 +1,125 @@
+<!--pages/recommend/recommend.wxml-->
+<view class="container">
+  <!-- 未登录状态 -->
+  <view wx:if="{{!isLoggedIn}}" class="login-tip">
+    <text class="tip-text">登录后查看个性化推荐</text>
+    <button class="login-btn" bindtap="goToLogin">立即登录</button>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:elif="{{loading}}" class="loading">
+    <view class="loading-spinner"></view>
+    <text>正在生成个性化推荐...</text>
+  </view>
+
+  <!-- 推荐内容 -->
+  <view wx:else class="recommend-content">
+    <!-- 用户画像卡片 -->
+    <view class="profile-card" wx:if="{{userProfile}}">
+      <view class="profile-header">
+        <text class="profile-title">你的动漫偏好</text>
+        <view class="profile-stats">
+          <view class="stat-item">
+            <text class="stat-value">{{stats.totalViews}}</text>
+            <text class="stat-label">部观看</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{stats.avgScore}}</text>
+            <text class="stat-label">平均评分</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 偏好标签 -->
+      <view class="preference-section" wx:if="{{favoriteTags.length > 0}}">
+        <text class="section-title">偏好标签</text>
+        <view class="tag-list">
+          <view class="tag-item" wx:for="{{favoriteTags}}" wx:key="tag">
+            <text class="tag-name">{{item.tag}}</text>
+            <view class="tag-bar">
+              <view class="tag-fill" style="width: {{item.weight}}%"></view>
+            </view>
+            <text class="tag-weight">{{item.weight}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 推荐列表标题 -->
+    <view class="recommend-header">
+      <text class="recommend-title">为你推荐</text>
+      <text class="recommend-subtitle">基于协同过滤算法生成</text>
+    </view>
+
+    <!-- 推荐列表 -->
+    <view class="recommend-list">
+      <view class="anime-card {{item.isTop3 ? 'top3' : ''}}" 
+            wx:for="{{recommendations}}" 
+            wx:key="id"
+            bindtap="navigateToDetail"
+            data-id="{{item.id}}">
+        
+        <!-- 排名标识 -->
+        <view class="rank-badge" wx:if="{{item.isTop3}}">
+          <text class="rank-text">TOP{{item.rank}}</text>
+        </view>
+        <view class="rank-number" wx:else>{{item.rank}}</view>
+        
+        <!-- 封面图 -->
+        <image class="anime-cover" src="{{item.coverUrl}}" mode="aspectFill" lazy-load/>
+        
+        <!-- 动漫信息 -->
+        <view class="anime-info">
+          <text class="anime-title">{{item.title}}</text>
+          
+          <!-- 评分和状态 -->
+          <view class="anime-meta">
+            <view class="rating">
+              <text class="rating-score">{{item.rating}}</text>
+              <text class="rating-total">/10</text>
+            </view>
+            <text class="status-badge {{item.status === '连载中' ? 'ongoing' : item.status === '已完结' ? 'completed' : ''}}">{{item.status}}</text>
+          </view>
+          
+          <!-- 标签 -->
+          <view class="tag-container">
+            <text class="anime-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+          </view>
+          
+          <!-- 简介 -->
+          <text class="anime-desc" wx:if="{{item.description}}">{{item.description}}</text>
+          
+          <!-- 推荐理由 -->
+          <view class="recommend-reason" wx:if="{{item.recommendReason}}">
+            <text class="reason-icon">💡</text>
+            <text class="reason-text">{{item.recommendReason}}</text>
+          </view>
+          
+          <!-- 热度 -->
+          <view class="heat-info" wx:if="{{item.heat > 0}}">
+            <text class="heat-icon">🔥</text>
+            <text class="heat-value">{{item.heat}}</text>
+            <text class="heat-label">人气</text>
+          </view>
+          
+          <!-- 评分功能 -->
+          <view class="rating-control">
+            <text class="rating-label">评分：</text>
+            <view class="stars">
+              <text class="star" bindtap="handleRating" data-id="{{item.id}}" data-rating="1">⭐</text>
+              <text class="star" bindtap="handleRating" data-id="{{item.id}}" data-rating="2">⭐</text>
+              <text class="star" bindtap="handleRating" data-id="{{item.id}}" data-rating="3">⭐</text>
+              <text class="star" bindtap="handleRating" data-id="{{item.id}}" data-rating="4">⭐</text>
+              <text class="star" bindtap="handleRating" data-id="{{item.id}}" data-rating="5">⭐</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="footer-tip">
+      <text>已经到底了，下拉刷新获取更多推荐</text>
+    </view>
+  </view>
+</view>

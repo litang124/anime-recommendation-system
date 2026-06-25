@@ -1,0 +1,136 @@
+<!-- pages/community/community.wxml -->
+<view class="community-container">
+  <!-- 头部 -->
+  <view class="community-header">
+    <view class="header-content">
+      <text class="title">评分社区</text>
+      <text class="subtitle">发现优质评价，分享你的看法</text>
+    </view>
+    <button class="post-btn" bindtap="createReview">写评价</button>
+  </view>
+
+  <!-- 分类标签 -->
+  <scroll-view scroll-x class="category-scroll">
+    <view class="category-list">
+      <view wx:for="{{categories}}" wx:key="id"
+            class="category-item {{activeCategory === item.id ? 'active' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="selectCategory">
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-section">
+    <view class="stat-item">
+      <text class="stat-value">{{stats.totalReviews}}</text>
+      <text class="stat-label">总评价</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{stats.avgRating}}</text>
+      <text class="stat-label">平均分</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{stats.activeUsers}}</text>
+      <text class="stat-label">活跃用户</text>
+    </view>
+  </view>
+
+  <!-- 为你推荐（动漫） -->
+  <view class="section recommend-section" wx:if="{{recommendations.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">🎯 为你推荐</text>
+      <text class="section-more" bindtap="goToRecommendPage">查看更多</text>
+    </view>
+    <scroll-view class="anime-scroll" scroll-x="true" enhanced="true">
+      <view class="anime-list">
+        <view class="anime-item" wx:for="{{recommendations}}" wx:key="id"
+              bindtap="goToAnimeDetail" data-id="{{item.id}}">
+          <image class="anime-cover" src="{{item.coverUrl || '/images/default-cover.png'}}" mode="aspectFill"/>
+          <text class="anime-title">{{item.title}}</text>
+          <text class="anime-score" wx:if="{{item.score > 0}}">⭐ {{item.score}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+
+
+  <!-- 评论列表 -->
+  <view class="section reviews-section">
+    <view class="section-header">
+      <text class="section-title">💬 精彩评论</text>
+    </view>
+    
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 评论列表 -->
+    <view class="reviews-list" wx:if="{{!loading && reviews.length > 0}}">
+      <view class="review-card" wx:for="{{reviews}}" wx:key="id"
+            bindtap="viewReviewDetail" data-id="{{item.id}}">
+        <!-- 热门标识 -->
+        <view class="hot-badge" wx:if="{{item.isHot}}">🔥 热门</view>
+        
+        <!-- 用户信息 -->
+        <view class="user-info">
+          <image class="user-avatar" src="{{item.user.avatarUrl}}" mode="aspectFill"/>
+          <view class="user-detail">
+            <text class="user-name">{{item.user.nickname}}</text>
+            <text class="review-time">{{item.createTime}}</text>
+          </view>
+          <view class="rating-badge">
+            <text class="rating-stars">
+              <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" 
+                    class="star {{item.rating >= item ? 'active' : ''}}">★</text>
+            </text>
+            <text class="rating-score">{{item.rating}}.0</text>
+          </view>
+        </view>
+
+        <!-- 评论内容 -->
+        <view class="review-content">
+          <text class="review-text">{{item.content}}</text>
+        </view>
+
+        <!-- 动漫信息 -->
+        <view class="anime-info" bindtap="goToAnimeDetail" data-id="{{item.anime.id}}">
+          <image class="anime-thumb" src="{{item.anime.coverUrl}}" mode="aspectFill"/>
+          <view class="anime-detail">
+            <text class="anime-name">《{{item.anime.title}}》</text>
+            <text class="anime-score">动漫评分: {{item.anime.score}}</text>
+          </view>
+          <text class="arrow">›</text>
+        </view>
+
+        <!-- 互动按钮 -->
+        <view class="review-actions">
+          <view class="action-btn {{item.liked ? 'liked' : ''}}" 
+                catchtap="likeReview" data-id="{{item.id}}">
+            <text class="icon">{{item.liked ? '❤️' : '🤍'}}</text>
+            <text class="count">{{item.likeCount}}</text>
+          </view>
+          <view class="action-btn" catchtap="viewReviewDetail" data-id="{{item.id}}">
+            <text class="icon">💬</text>
+            <text class="count">回复</text>
+          </view>
+          <view class="action-btn">
+            <text class="icon">↗️</text>
+            <text class="count">分享</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && reviews.length === 0}}">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无评论</text>
+      <text class="empty-tip">成为第一个发表评论的人吧</text>
+    </view>
+  </view>
+</view>

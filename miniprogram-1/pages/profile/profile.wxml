@@ -1,0 +1,169 @@
+<!--pages/profile/profile.wxml-->
+<view class="profile-container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-header">
+      <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/logo.png'}}" mode="aspectFill"/>
+      <view class="user-info" wx:if="{{isLoggedIn}}">
+        <text class="user-nickname">{{userInfo.nickname || '动漫爱好者'}}</text>
+        <text class="user-id">ID: {{userInfo.id}}</text>
+      </view>
+      <view class="user-info" wx:else>
+        <text class="user-nickname">未登录</text>
+        <text class="login-tip">登录后查看个人中心</text>
+      </view>
+      <view class="settings-btn" wx:if="{{isLoggedIn}}" bindtap="goToSettings">
+        <text class="icon">⚙️</text>
+        <text class="settings-text">设置</text>
+      </view>
+    </view>
+    
+    <!-- 兴趣标签浓度 -->
+    <view class="tag-concentration" wx:if="{{isLoggedIn && favoriteCategories.length > 0}}">
+      <view class="section-title">
+        <text class="title-text">我的兴趣标签</text>
+      </view>
+      <view class="tag-list">
+        <view class="tag-item" wx:for="{{favoriteCategories}}" wx:key="index">
+          <view class="tag-name">{{item.name}}</view>
+          <view class="tag-progress">
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.value * 100}}%"></view>
+            </view>
+            <text class="progress-percent">{{item.percent}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 统计数据 -->
+    <view class="statistics-bar" wx:if="{{isLoggedIn}}">
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.planToWatch}}</text>
+        <text class="stat-label">想看</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{reviews.length}}</text>
+        <text class="stat-label">评论</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{favoriteCategories.length}}</text>
+        <text class="stat-label">兴趣标签</text>
+      </view>
+    </view>
+    
+    <!-- 登录按钮 -->
+    <view class="login-section" wx:if="{{!isLoggedIn}}">
+      <button class="login-btn" bindtap="goToLogin">立即登录</button>
+    </view>
+  </view>
+
+  <!-- 标签切换 -->
+  <view class="tab-bar" wx:if="{{isLoggedIn}}">
+    <view class="tab-item {{activeTab === 'planned' ? 'active' : ''}}" 
+          data-tab="planned" bindtap="switchTab">
+      <text class="tab-text">想看</text>
+      <text class="tab-badge" wx:if="{{statistics.planToWatch > 0}}">{{statistics.planToWatch}}</text>
+    </view>
+    <view class="tab-item {{activeTab === 'reviews' ? 'active' : ''}}" 
+          data-tab="reviews" bindtap="switchTab">
+      <text class="tab-text">评论</text>
+      <text class="tab-badge" wx:if="{{reviews.length > 0}}">{{reviews.length}}</text>
+    </view>
+  </view>
+
+  <!-- 内容列表 -->
+  <view class="content-list" wx:if="{{isLoggedIn}}">
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 观看记录列表 -->
+    <block wx:if="{{activeTab !== 'reviews' && !loading}}">
+      <view class="record-list" wx:if="{{getCurrentTabData().length > 0}}">
+        <view class="record-item" wx:for="{{getCurrentTabData()}}" wx:key="id"
+              bindtap="goToAnimeDetail" data-id="{{item.id}}">
+          <image class="record-cover" src="{{item.coverUrl || '/images/default-cover.png'}}" mode="aspectFill"/>
+          <view class="record-info">
+            <text class="record-title">{{item.title}}</text>
+            <view class="record-meta">
+              <text class="record-score" wx:if="{{item.score > 0}}">⭐ {{item.score}}</text>
+              <text class="record-progress">{{item.episodeCount || '未知集数'}}集</text>
+            </view>
+            <view class="record-status">
+              <text class="status-tag status-0">想看</text>
+            </view>
+          </view>
+        </view>
+      </view>
+            
+      <!-- 想看清单（wishList）-->
+      <view class="record-list" wx:if="{{activeTab === 'planned' && wishListAnimes.length > 0}}">
+        <scroll-view class="wish-scroll" scroll-x="true" enhanced="true">
+          <view class="record-item" wx:for="{{wishListAnimes}}" wx:key="id"
+                bindtap="goToAnimeDetail" data-id="{{item.id}}">
+            <image class="record-cover" src="{{item.coverUrl || '/images/default-cover.png'}}" mode="aspectFill"/>
+            <view class="record-info">
+              <text class="record-title">{{item.title}}</text>
+              <view class="record-meta">
+                <text class="record-score" wx:if="{{item.score > 0}}">⭐ {{item.score}}</text>
+                <text class="record-progress">{{item.episodeCount || '未知集数'}}集</text>
+              </view>
+              <view class="record-status">
+                <text class="status-tag status-0">想看</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+            
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{getCurrentTabData().length === 0 && activeTab === 'planned'}}">
+        <text class="empty-icon">✨</text>
+        <text class="empty-text">暂无想看的动漫</text>
+        <text class="empty-tip">去新番日历添加你喜欢的动漫吧</text>
+      </view>
+            
+      <!-- 评论空状态 -->
+      <view class="empty-state" wx:if="{{activeTab === 'reviews' && reviews.length === 0}}">
+        <text class="empty-icon">💬</text>
+        <text class="empty-text">暂无评论</text>
+        <text class="empty-tip">去动漫详情页发表你的看法吧</text>
+      </view>
+    </block>
+
+    <!-- 评论列表 -->
+    <block wx:if="{{activeTab === 'reviews' && !loading}}">
+      <view class="review-list" wx:if="{{reviews.length > 0}}">
+        <view class="review-item" wx:for="{{reviews}}" wx:key="id"
+              bindtap="goToReviewDetail" data-id="{{item.id}}">
+          <image class="review-anime-cover" src="{{item.animeCover}}" mode="aspectFill"/>
+          <view class="review-content">
+            <text class="review-anime-title">{{item.animeTitle}}</text>
+            <view class="review-rating">
+              <text class="rating-stars">{{item.rating >= 1 ? '★' : '☆'}}{{item.rating >= 2 ? '★' : '☆'}}{{item.rating >= 3 ? '★' : '☆'}}{{item.rating >= 4 ? '★' : '☆'}}{{item.rating >= 5 ? '★' : '☆'}}</text>
+              <text class="rating-value">{{item.rating}}.0</text>
+            </view>
+            <text class="review-text" wx:if="{{item.content}}">{{item.content}}</text>
+            <view class="review-footer">
+              <text class="review-time">{{item.createTime}}</text>
+              <view class="like-btn {{item.liked ? 'liked' : ''}}" catchtap="likeReview" data-id="{{item.id}}">
+                <text class="like-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+                <text class="like-count">{{item.likeCount}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{reviews.length === 0}}">
+        <text class="empty-icon">💬</text>
+        <text class="empty-text">暂无评论</text>
+        <text class="empty-tip">去动漫详情页发表你的看法吧</text>
+      </view>
+    </block>
+  </view>
+</view>
