@@ -1,0 +1,144 @@
+<!--pages/anime-detail/anime-detail.wxml-->
+<view class="container">
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+
+  <!-- 错误提示 -->
+  <view wx:elif="{{error}}" class="error-tip">
+    <text class="error-text">{{error}}</text>
+    <button class="retry-btn" bindtap="loadAnimeDetail">重试</button>
+  </view>
+
+  <!-- 动漫详情 -->
+  <view wx:elif="{{anime}}" class="anime-detail">
+    <!-- 头部信息区 -->
+    <view class="header-section">
+      <image class="cover-image" src="{{anime.coverUrl}}" mode="aspectFill" lazy-load/>
+      
+      <view class="header-info">
+        <text class="anime-title">{{anime.title}}</text>
+        
+        <view class="meta-row">
+          <view class="rating-box">
+            <text class="rating-score">{{anime.rating}}</text>
+            <text class="rating-total">/10</text>
+          </view>
+          <text class="status-badge {{anime.status === '连载中' ? 'ongoing' : anime.status === '已完结' ? 'completed' : ''}}">{{anime.status}}</text>
+        </view>
+        
+        <view class="tag-list">
+          <text class="tag-item" wx:for="{{anime.tags}}" wx:key="*this">{{item}}</text>
+        </view>
+        
+        <view class="meta-info">
+          <text wx:if="{{anime.releaseYear}}">{{anime.releaseYear}}年</text>
+          <text wx:if="{{anime.episodeCount}}">{{anime.episodeCount}}集</text>
+          <text wx:if="{{anime.heat}}">🔥 {{anime.heat}}人气</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 简介 -->
+    <view class="section">
+      <view class="section-title">简介</view>
+      <text class="description">{{anime.description}}</text>
+    </view>
+
+    <!-- 观看进度 -->
+    <view class="section" wx:if="{{isLoggedIn}}">
+      <view class="section-title">观看进度</view>
+      <view class="progress-section">
+        <picker mode="selector" range="{{episodeRange}}" bindchange="updateProgress">
+          <view class="progress-picker">
+            <text class="progress-text">看到第 {{currentEpisode}} 集 / 共 {{totalEpisodes}} 集</text>
+            <text class="progress-arrow">›</text>
+          </view>
+        </picker>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-section">
+      <button class="action-btn primary" bindtap="showRatingModal">
+        <text class="btn-icon">⭐</text>
+        <text class="btn-text">评分</text>
+      </button>
+      <button class="action-btn" open-type="share">
+        <text class="btn-icon">📤</text>
+        <text class="btn-text">分享</text>
+      </button>
+    </view>
+
+    <!-- 评论列表 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">评论 ({{reviews.length}})</text>
+        <text class="write-review" bindtap="showRatingModal" wx:if="{{isLoggedIn}}">写评论</text>
+      </view>
+      
+      <!-- 评论列表 -->
+      <view class="review-list">
+        <view class="review-item" wx:for="{{reviews}}" wx:key="id">
+          <image class="reviewer-avatar" src="{{item.avatar}}" mode="aspectFill"/>
+          <view class="review-content">
+            <view class="reviewer-header">
+              <text class="reviewer-name">{{item.username}}</text>
+              <view class="review-rating">
+                <text class="star" wx:for="{{5}}" wx:for-index="idx" wx:key="idx">{{idx < item.rating ? '★' : '☆'}}</text>
+              </view>
+            </view>
+            <text class="review-text">{{item.content}}</text>
+            <view class="review-footer">
+              <text class="review-time">{{item.createTime}}</text>
+              <view class="like-btn {{item.liked ? 'liked' : ''}}" bindtap="likeReview" data-id="{{item.id}}">
+                <text class="like-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+                <text class="like-count">{{item.likeCount}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{hasMoreReviews}}" bindtap="onReachBottom">
+        <text>加载更多评论</text>
+      </view>
+      <view class="no-more" wx:else>
+        <text>没有更多评论了</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评分弹窗 -->
+  <view class="modal-mask" wx:if="{{showRatingModal}}" bindtap="hideRatingModal">
+    <view class="modal-content" catchtap="preventHide">
+      <view class="modal-header">
+        <text class="modal-title">为动漫评分</text>
+        <text class="modal-close" bindtap="hideRatingModal">×</text>
+      </view>
+      
+      <view class="rating-stars">
+        <text class="star-item {{userRating >= item ? 'active' : ''}}" 
+              wx:for="{{[1,2,3,4,5]}}" 
+              wx:key="*this"
+              bindtap="selectRating"
+              data-rating="{{item}}">★</text>
+      </view>
+      <text class="rating-text">{{userRating > 0 ? userRating + '分' : '点击星星评分'}}</text>
+      
+      <textarea class="comment-input" 
+                placeholder="写下你的评论（可选）" 
+                value="{{userComment}}"
+                bindinput="onCommentInput"
+                maxlength="500"/>
+      
+      <button class="submit-btn" bindtap="submitRating">提交</button>
+    </view>
+  </view>
+</view>
